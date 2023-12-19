@@ -1,0 +1,7 @@
+Information about historical data
+
+Bulgarian Stock Exchange - Sofia (SOFIX) https://bse-sofia.bg/en/indices/sofix BGN 01/01/2005-31/12/2022
+Serbia Belgrad Stock Exchange (belex15) https://www.belex.rs/eng/trgovanje/indeksi/belex15/istorijski RSD 4/10/2005-31/12/2022
+Croatia Zagreb Stock Exchange (CBX10) https://zse.hr/en/indeks-366/365?isin=HRZB00ICBE11&tab=index_history&date_from=2010-01-01&date_to=2022-12-30 EUR 01/01/2010-31/12/202
+S&P500
+S&P600 
