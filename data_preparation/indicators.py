@@ -19,14 +19,10 @@ def compute_ema(dataset, window=10):
     # Ensure the dataset is sorted by date
     dataset = dataset.sort_values(by='date')
 
-    # Calculate the smoothing factor (k)
-    k = 2 / (window + 1)
-
     # Compute EMA using the formula for the day before
-    ema_column_name = 'EMA_{}'.format(window)
-    dataset[ema_column_name] = dataset['price'].shift(1).ewm(span=window, adjust=False).mean()
+    EMA = dataset['price'].shift(1).ewm(span=window, adjust=False).mean()
 
-    return dataset[ema_column_name]
+    return EMA
 
 def compute_macd(dataset, ema_window_short=12, ema_window_long=26):
     """
@@ -50,10 +46,9 @@ def compute_macd(dataset, ema_window_short=12, ema_window_long=26):
     ema_long = compute_ema(dataset, window=ema_window_long)
 
     # Compute MACD as the difference between short EMA and long EMA
-    macd_column_name = 'MACD'
-    dataset[macd_column_name] = ema_short - ema_long
+    MACD = ema_short - ema_long
 
-    return dataset[macd_column_name]
+    return MACD
 
 def compute_log_return(dataset):
     
@@ -74,7 +69,6 @@ def compute_log_return(dataset):
     dataset = dataset.sort_values(by='date')
 
     # Compute the logarithmic return for the day before
-    Log_column_name = 'Log_Return'
-    dataset[Log_column_name] = np.log(dataset['price'] / dataset['price'].shift(1))
+    Log_Return = np.log(dataset['price'] / dataset['price'].shift(1))
 
-    return dataset[Log_column_name]
+    return Log_Return
