@@ -10,7 +10,7 @@ def calculate_cumulative_return(data, start_date, end_date):
     initial_cash = 1.0  # Initial cash amount
     cash = initial_cash  # Current cash amount
     shares_held = 0  # Number of shares currently held
-    transaction_cost = 0.01  # 1% transaction cost
+    transaction_cost = 0.001  # 1% transaction cost
     
     # Calculate cumulative returns
     for i in range(len(data)):
