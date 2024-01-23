@@ -1,54 +1,59 @@
 def calculate_cumulative_return(data, start_date, end_date):
+    data = data.sort_values(by='date').reset_index(drop=True)
     # Ensure the data is sorted by date
-    data = data.sort_values(by='date')
-    
-    # Filter data based on start_date and end_date
-    data = data[(data['date'] >= start_date) & (data['date'] <= end_date)]
-    
-    # Initialize variables
-    position = 0  # 0: No position, 1: Long position, -1: Short position
-    initial_cash = 1.0  # Initial cash amount
-    cash = initial_cash  # Current cash amount
-    shares_held = 0  # Number of shares currently held
-    transaction_cost = 0.001  # 1% transaction cost
-    
-    # Calculate cumulative returns
-    for i in range(len(data)):
-        signal = data['trading_signal'].iloc[i]
-        price = data['price'].iloc[i]
-        
-        # Check if a position needs to be opened or closed
-        if signal == 1 and position != 1:  # Buy signal
-            # Sell current position (if any)
-            cash -= shares_held * price * (1 + transaction_cost)
-            
-            # Buy shares
-            shares_held = cash / price
-            cash = 0
-            position = 1
-        elif signal == -1 and position != -1:  # Sell signal
-            # Buy back current position (if any)
-            cash += shares_held * price * (1 - transaction_cost)
-            
-            # Sell shares
-            shares_held = 0
-            position = -1
-        elif signal == 0 and position != 0:  # No signal
-            # Close current position (if any)
-            cash += shares_held * price * (1 - transaction_cost) if position == -1 else shares_held * price * (1 + transaction_cost)
-            
-            # Reset position
-            shares_held = 0
-            position = 0
-        
-        # Update cash value for each time period
-        cash *= (1 - transaction_cost)  # Apply transaction cost
-        
-    # Calculate final value
-    final_value = cash + shares_held * data['price'].iloc[-1]
+    cumulative_return = 0
+    current_return = 0
+    data.at[0, 'trading_signal'] = 1
+
+    for index, row in data.iterrows():
+        if data.at[index, 'trading_signal'] == 1:
+            start_date = data.at[index, 'date']
+            for i in range(index, len(data)):
+                if data.at[i, 'trading_signal'] == -1:
+                    end_date = data.at[i, 'date']
+                    break
+            trade_return = calculate_returns(data, start_date, end_date)
+            if index != 0:
+                # Call calculate_returns method to get the return for the current trade
+                cumulative_return = cumulative_return * (1 + trade_return / 100)
+            else:
+                cumulative_return = 1 * (1 + trade_return / 100)
     
     # Calculate cumulative return
-    cumulative_return = (final_value - initial_cash) / initial_cash * 100
+    cumulative_return = (cumulative_return-1) * 100
     
     return cumulative_return
 
+def calculate_returns(data, start_date, end_date, initial_cash=10000, commission_rate=0.005):
+    """
+    Calculate returns of an index bought on start_date and sold on end_date.
+
+    Parameters:
+    - data: DataFrame with columns ['date', 'price', 'MACD', 'EMA_10', 'Log_Return']
+    - start_date: Buy date
+    - end_date: Sell date
+    - initial_cash: Initial cash available for buying the index (default: $100,000)
+    - commission_rate: Commission rate for buying and selling (default: 0.5%)
+
+    Returns:
+    - Returns the calculated returns as a percentage.
+    """
+    # Filter data between start_date and end_date
+    subset = data[(data['date'] >= start_date) & (data['date'] <= end_date)].copy()
+
+    # Calculate the number of shares bought with initial cash
+    initial_shares = initial_cash / subset.iloc[0]['price']
+
+    # Calculate the value of the investment at the end_date
+    final_value = initial_shares * subset.iloc[-1]['price']
+
+    # Calculate total commissions
+    total_commissions = (initial_cash + final_value) * commission_rate
+
+    # Calculate net return
+    net_return = final_value - total_commissions - initial_cash
+
+    # Calculate return percentage
+    return_percentage = (net_return / initial_cash) * 100
+
+    return return_percentage
