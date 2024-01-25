@@ -1,59 +1,59 @@
-def calculate_cumulative_return(data, start_date, end_date):
-    data = data.sort_values(by='date').reset_index(drop=True)
-    # Ensure the data is sorted by date
-    cumulative_return = 0
-    current_return = 0
-    data.at[0, 'trading_signal'] = 1
+import pandas as pd
 
-    for index, row in data.iterrows():
-        if data.at[index, 'trading_signal'] == 1:
-            start_date = data.at[index, 'date']
-            for i in range(index, len(data)):
-                if data.at[i, 'trading_signal'] == -1:
-                    end_date = data.at[i, 'date']
-                    break
-            trade_return = calculate_returns(data, start_date, end_date)
-            if index != 0:
-                # Call calculate_returns method to get the return for the current trade
-                cumulative_return = cumulative_return * (1 + trade_return / 100)
-            else:
-                cumulative_return = 1 * (1 + trade_return / 100)
+def gross_returns(dataset, start_date, end_date):
+    # Convert 'date' column to datetime format
+    dataset['date'] = pd.to_datetime(dataset['date'])
     
-    # Calculate cumulative return
-    cumulative_return = (cumulative_return-1) * 100
+    # Filter dataset based on start and end dates
+    subsample = dataset[(dataset['date'] >= start_date) & (dataset['date'] <= end_date)].copy()
     
-    return cumulative_return
+    # Compute daily capital gain
+    subsample['daily_gain'] = (subsample['price'].diff()) * subsample['trading_signal']
+    
+    # Compute cumulative capital gain
+    subsample['cumulative_gain'] = subsample['daily_gain'].cumsum()
+    
+    # Return only the cumulative gain
+    return subsample['cumulative_gain'].iloc[-1]
 
-def calculate_returns(data, start_date, end_date, initial_cash=10000, commission_rate=0.005):
-    """
-    Calculate returns of an index bought on start_date and sold on end_date.
 
-    Parameters:
-    - data: DataFrame with columns ['date', 'price', 'MACD', 'EMA_10', 'Log_Return']
-    - start_date: Buy date
-    - end_date: Sell date
-    - initial_cash: Initial cash available for buying the index (default: $100,000)
-    - commission_rate: Commission rate for buying and selling (default: 0.5%)
+def net_returns(dataset, start_date, end_date):
+    # Convert 'date' column to datetime format
+    dataset['date'] = pd.to_datetime(dataset['date'])
+    
+    # Filter dataset based on start and end dates
+    subsample = dataset[(dataset['date'] >= start_date) & (dataset['date'] <= end_date)].copy()
+    
+    # Compute daily capital gain
+    subsample['daily_gain'] = (subsample['price'].diff()) * subsample['trading_signal']
+    
+    # Apply 1% transaction cost
+    subsample['daily_gain'] = subsample['daily_gain'] - (0.01 * abs(subsample['daily_gain']))
+    
+    # Compute cumulative capital gain
+    subsample['cumulative_gain'] = subsample['daily_gain'].cumsum()
+    
+    # Return only the cumulative gain
+    return subsample['cumulative_gain'].iloc[-1]
 
-    Returns:
-    - Returns the calculated returns as a percentage.
-    """
-    # Filter data between start_date and end_date
-    subset = data[(data['date'] >= start_date) & (data['date'] <= end_date)].copy()
 
-    # Calculate the number of shares bought with initial cash
-    initial_shares = initial_cash / subset.iloc[0]['price']
-
-    # Calculate the value of the investment at the end_date
-    final_value = initial_shares * subset.iloc[-1]['price']
-
-    # Calculate total commissions
-    total_commissions = (initial_cash + final_value) * commission_rate
-
-    # Calculate net return
-    net_return = final_value - total_commissions - initial_cash
-
-    # Calculate return percentage
-    return_percentage = (net_return / initial_cash) * 100
-
-    return return_percentage
+def buy_and_hold_returns(dataset, start_date, end_date):
+    
+    # Ensure the 'date' column is in datetime format
+    dataset['date'] = pd.to_datetime(dataset['date'])
+    
+    # Convert start_date and end_date to datetime objects
+    start_date = pd.to_datetime(start_date)
+    end_date = pd.to_datetime(end_date)
+    
+    # Filter the dataset for the specified date range
+    selected_data = dataset[(dataset['date'] >= start_date) & (dataset['date'] <= end_date)].copy()
+    
+    # Extract the initial and final prices
+    initial_price = selected_data.iloc[0]['price']
+    final_price = selected_data.iloc[-1]['price']
+    
+    # Calculate the buy and hold return
+    buy_and_hold_return = (final_price - initial_price) / initial_price
+    
+    return buy_and_hold_return

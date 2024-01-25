@@ -3,30 +3,28 @@ import numpy as np
 
 def compute_ema(dataset, window=10):
     """
-    It returns the Exponential moving average series of the day before.
+    It returns the Exponential moving average series.
 
     Parameters
     ----------
     dataset: Dataframe
         The Dataframe with 'date' and 'price column'
     window: int
-        the time period chosen
+        the decay chosen in terms of span
 
     Returns
     -------
     Column to add to a dataset
     """
-    # Ensure the dataset is sorted by date
-    dataset = dataset.sort_values(by='date')
-
-    # Compute EMA using the formula for the day before
-    EMA = dataset['price'].shift(1).ewm(span=window, adjust=False).mean()
+    
+    # Compute EMA using the formula
+    EMA = dataset['price'].ewm(span=window, adjust=False).mean()
 
     return EMA
 
 def compute_macd(dataset, ema_window_short=12, ema_window_long=26):
     """
-    It returns the Moving Average Convergence Divergence series of the day before.
+    It returns the Moving Average Convergence Divergence series.
 
     Parameters
     ----------
@@ -53,7 +51,7 @@ def compute_macd(dataset, ema_window_short=12, ema_window_long=26):
 def compute_log_return(dataset):
     
     """
-    It returns the Logarithmic returns series of the day before.
+    It returns the Logarithmic returns series.
 
     Parameters
     ----------
@@ -68,7 +66,7 @@ def compute_log_return(dataset):
     # Ensure the dataset is sorted by date
     dataset = dataset.sort_values(by='date')
 
-    # Compute the logarithmic return for the day before
+    # Compute the logarithmic return
     Log_Return = np.log(dataset['price'] / dataset['price'].shift(1))
 
     return Log_Return
