@@ -8,13 +8,13 @@ def gross_returns(dataset, start_date, end_date):
     subsample = dataset[(dataset['date'] >= start_date) & (dataset['date'] <= end_date)].copy()
     
     # Compute daily capital gain
-    subsample['daily_gain'] = (subsample['price'].diff()) * subsample['trading_signal']
+    subsample['daily_gain'] = (-1*subsample['price'].diff(periods=-1)) * subsample['trading_signal']
     
-    # Compute cumulative capital gain
-    subsample['cumulative_gain'] = subsample['daily_gain'].cumsum()
+    # Compute cumulative capital gain %
+    cumulative_gain = 100*(subsample['daily_gain'].sum() / subsample.iloc[0]['price'])
     
-    # Return only the cumulative gain
-    return subsample['cumulative_gain'].iloc[-1]
+    # Return only the cumulative gain &
+    return cumulative_gain
 
 
 def net_returns(dataset, start_date, end_date):
@@ -25,17 +25,16 @@ def net_returns(dataset, start_date, end_date):
     subsample = dataset[(dataset['date'] >= start_date) & (dataset['date'] <= end_date)].copy()
     
     # Compute daily capital gain
-    subsample['daily_gain'] = (subsample['price'].diff()) * subsample['trading_signal']
+    subsample['daily_gain'] = (-1*subsample['price'].diff(periods=-1)) * subsample['trading_signal']
     
     # Apply 1% transaction cost
     subsample['daily_gain'] = subsample['daily_gain'] - (0.01 * abs(subsample['daily_gain']))
     
-    # Compute cumulative capital gain
-    subsample['cumulative_gain'] = subsample['daily_gain'].cumsum()
+    # Compute cumulative capital gain %
+    cumulative_gain = 100*(subsample['daily_gain'].sum() / subsample.iloc[0]['price'])
     
-    # Return only the cumulative gain
-    return subsample['cumulative_gain'].iloc[-1]
-
+    # Return only the cumulative gain %
+    return cumulative_gain
 
 def buy_and_hold_returns(dataset, start_date, end_date):
     
@@ -54,6 +53,6 @@ def buy_and_hold_returns(dataset, start_date, end_date):
     final_price = selected_data.iloc[-1]['price']
     
     # Calculate the buy and hold return
-    buy_and_hold_return = (final_price - initial_price) / initial_price
+    buy_and_hold_return = 100*((final_price - initial_price) / initial_price)
     
     return buy_and_hold_return

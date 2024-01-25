@@ -4,12 +4,14 @@ from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score
 from trading_signal import compute_trading_signal
 from sklearn.model_selection import GridSearchCV
-
 import numpy as np
 
 df = pd.read_csv('../data/BELEX15_.csv')
 
 def LS_SVM_(data_source:str):
+    
+    np.random.seed(42)
+
     df = pd.read_csv(data_source)
 
     # Create a y column for the training part
@@ -47,13 +49,13 @@ def LS_SVM_(data_source:str):
     X_test_scaled = scaler.transform(X_test)
 
     # LS-SVM classifier with 'rbf' kernel
-    svm = SVC(kernel='rbf')
+    svm = SVC(kernel='rbf',random_state=42)
 
     #Define the parameter grid for grid search
     param_grid = {
-        'C': 8,  # Exponential values for C
-        'gamma': 16
-    }
+    'C': [0.01, 0.1, 1, 10, 100],
+    'gamma': [0.001, 0.01, 0.1, 1, 10]
+}
 
     # Create a GridSearchCV object with 10-fold cross-validation
     grid_search = GridSearchCV(svm, param_grid, cv=10)
