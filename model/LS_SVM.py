@@ -74,7 +74,7 @@ def LS_SVM_(data_source:str):
     print(f"Accuracy: {accuracy * 100:.2f}%")
     
     #compute trend predictions
-    test_data['y'] = y_pred
+    test_data.loc[:, 'y'] = y_pred
     
     # Concatenate the train and test datasets back together
     df = pd.concat([train_data, test_data], ignore_index=True)
